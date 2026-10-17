@@ -1,30 +1,25 @@
-# This is a basic workflow to help you get started with Actions
-
 name: CI
 
-# Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the main branch
+  # 什么时候触发?
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
 
-  # Allows you to run this workflow manually from the Actions tab
+  # 允许你从 Actions 选项卡手动运行此工作流
   workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
+  # 这个工作流包含一个名为“build”的作业
   build:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      # 下载Github代码到 runner
       - uses: actions/checkout@v2
       
+      # 登录到 Docker Hub
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
@@ -32,20 +27,21 @@ jobs:
           password: ${{ secrets.PASSWORD }}
           logout: true
 
-      # Runs a set of commands using the runners shell
+      # 构建并推送 Docker 镜像
       - name: build image
         run: |
           make image
           docker tag flask-demo:latest ${{ secrets.USERNAME }}/flask-demo-argocd:${{ github.sha }}
           docker push ${{ secrets.USERNAME }}/flask-demo-argocd:${{ github.sha }}
 
+      # Trigger表示的是远程去触发另一个仓库的工作流
       - name: Trigger CI
         uses: peter-evans/repository-dispatch@v3
         with:
-          token: ${{ secrets.CI_TOKEN }}
-          repository: ouyangkun-sre/flask-demo-kustomize-argocd
-          event-type: trigger-deploy
-          client-payload: >-
+          token: ${{ secrets.CI_TOKEN }} # 使用哪个token去触发另一个仓库的工作流
+          repository: ouyangkun-sre/flask-demo-kustomize-argocd # 仓库名是什么
+          event-type: trigger-deploy # 自定义事件名称
+          client-payload: >- # 自定义传递给目标工作流的参数 JSON
             {
               "image": "${{ secrets.USERNAME }}/flask-demo-argocd",
               "sha-tag": "${{ github.sha }}"
