@@ -40,14 +40,13 @@ jobs:
           docker push ${{ secrets.USERNAME }}/flask-demo-argocd:${{ github.sha }}
 
       - name: Trigger CI
-        uses: InformaticsMatters/trigger-ci-action@1.0.1
+        uses: peter-evans/repository-dispatch@v3
         with:
-          ci-owner: ouyangkun-sre
-          ci-repository: flask-demo-kustomize-argocd
-          ci-ref: refs/heads/main
-          ci-user: ouyangkun-sre
-          ci-user-token: ${{ secrets.CI_TOKEN }}
-          ci-name: CI
-          ci-inputs: >-
-            image=${{ secrets.USERNAME }}/flask-demo-argocd
-            sha-tag=${{ github.sha }}
+          token: ${{ secrets.CI_TOKEN }}
+          repository: ouyangkun-sre/flask-demo-kustomize-argocd
+          event-type: trigger-deploy
+          client-payload: >-
+            {
+              "image": "${{ secrets.USERNAME }}/flask-demo-argocd",
+              "sha-tag": "${{ github.sha }}"
+            }
