@@ -43,6 +43,6 @@ jobs:
           event-type: trigger-deploy # 自定义事件名称
           client-payload: >- # 自定义传递给目标工作流的参数 JSON
             {
-              "image": "${{ secrets.USERNAME }}/flask-demo-argocd",
+              "image": "docker.io/${{ secrets.USERNAME }}/flask-demo-argocd",
               "sha-tag": "${{ github.sha }}"
             }
